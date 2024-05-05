@@ -47,8 +47,8 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/yyyy-mm-dd(replace with actual date & erase this)<start><br/>"
-        f"/api/v1.0/yyyy-mm-dd(replace with actual date & erase this)<start>/<end><br/>"
+        f"/api/v1.0/<start><br/>"
+        f"/api/v1.0/<start>/<end><br/>"
     )
 
 # /api/v1.0/precipitation ------------------------------------------
@@ -62,7 +62,7 @@ def precipitation():
     max_date = dt.datetime.strptime(max_date, '%Y-%m-%d')
     one_year_ago = max_date - dt.timedelta(days=365)
 
-    # query prcp
+    # query 
     prcp_db = [Measurement.date, Measurement.prcp]
     results = session.query(*prcp_db).filter(Measurement.date >= one_year_ago).all()
     session.close() 
@@ -91,7 +91,7 @@ def stations():
 # /api/v1.0/tobs ------------------------------------------
 @app.route("/api/v1.0/tobs")
 def tobs():
-    # Create our session (link) from Python to the DB
+    # Create our session link from Python to the DB
     session = Session(engine)
     
     # find most active station
@@ -124,16 +124,19 @@ def tobs():
 
 # /api/v1.0/start and end ------------------------------------------
 
-# f"/api/v1.0/yyyy-mm-dd<start><br/>"
-@app.route("/api/v1.0/yyyy-mm-dd<start>")
+@app.route("/api/v1.0/<start>")
 def start(start):
-    result = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs),\
-                                func.max(Measurement.tobs)).filter(Measurement.date >= start).all()
+
+    # Create session link from python to the DB
+    session = Session(engine)
+
+    # query
+    result = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).filter(Measurement.date >= start).all()
     
     session.close()
     stats1 = []
 
-    for min,avg,max in result:
+    for min, avg, max in result:
         tobs_list = {}
         tobs_list["Min"] = min
         tobs_list["Average"] = avg
@@ -143,27 +146,37 @@ def start(start):
     return jsonify(stats1)
 
 # f"/api/v1.0/yyyy-mm-dd<start><br/>"
-@app.route("/api/v1.0/yyyy-mm-dd<start>/<end>")
-def start_end(start,end):
-    queryresult = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs),\
-                func.max(Measurement.tobs)).filter(Measurement.date >= start).\
-                filter(Measurement.date <= end).all()
+@app.route("/api/v1.0/<start>/<end>")
+def start_end(start, end):
+
+    # Create session link from python to the DB
+    session = Session(engine)
+
+    # query
+    queryresult = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs))\
+                .filter(Measurement.date >= start)\
+                .filter(Measurement.date <= end)\
+                .all()
 
     session.close()
 
     stats2 = []
-    for min,avg,max in queryresult:
-        tobs_list = {}
-        tobs_list["Min"] = min
-        tobs_list["Average"] = avg
-        tobs_list["Max"] = max
-        stats2.append(tobs_list)
+    for min_temp, avg_temp, max_temp in queryresult:
+        tobs_dict = {
+            "Min": min_temp,
+            "Average": avg_temp,
+            "Max": max_temp
+        }
+        stats2.append(tobs_dict)
 
     return jsonify(stats2)
 
 
 
-# start the Flask server -------------------------------------------------------
+# Flask server start-------------------------------------------------------
 if __name__ == '__main__':
     app.run(debug=True)
 
+# test http://127.0.0.1:5000/api/v1.0/2017-01-01
+
+# test http://127.0.0.1:5000/api/v1.0/2017-01-01/2017-01-10
