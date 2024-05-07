@@ -145,7 +145,7 @@ def start(start):
         
     return jsonify(stats1)
 
-# f"/api/v1.0/yyyy-mm-dd<start><br/>"
+
 @app.route("/api/v1.0/<start>/<end>")
 def start_end(start, end):
 
