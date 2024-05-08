@@ -137,11 +137,11 @@ def start(start):
     stats1 = []
 
     for min, avg, max in result:
-        tobs_list = {}
-        tobs_list["Min"] = min
-        tobs_list["Average"] = avg
-        tobs_list["Max"] = max
-        stats1.append(tobs_list)
+        start_list = {}
+        start_list["Min"] = min
+        start_list["Average"] = avg
+        start_list["Max"] = max
+        stats1.append(start_list)
         
     return jsonify(stats1)
 
@@ -161,13 +161,13 @@ def start_end(start, end):
     session.close()
 
     stats2 = []
-    for min_temp, avg_temp, max_temp in queryresult:
-        tobs_dict = {
-            "Min": min_temp,
-            "Average": avg_temp,
-            "Max": max_temp
-        }
-        stats2.append(tobs_dict)
+
+    for min, avg, max in result:
+        start_end_list = {}
+        start_end_list["Min"] = min
+        start_end_list["Average"] = avg
+        start_end_list["Max"] = max
+        stats2.append(start_end_list)
 
     return jsonify(stats2)
 
